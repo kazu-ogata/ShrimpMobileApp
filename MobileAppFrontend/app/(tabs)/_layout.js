@@ -6,18 +6,12 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarStyle: {
-          height: 80, paddingBottom: 10, paddingTop: 10,
-          backgroundColor: '#156043', borderTopWidth: 1, borderColor: '#013A2E',
-        },
-        tabBarActiveTintColor: '#FF8C2A',
-        tabBarInactiveTintColor: '#013A2E',
+        tabBarStyle: { height: 80, paddingBottom: 15, backgroundColor: '#FFFFFF' },
+        tabBarActiveTintColor: '#2A9D8F',
+        tabBarInactiveTintColor: '#1A3A5F',
         tabBarIcon: ({ color, size }) => {
-          const name = route.name;
-          if (name === 'home') return <MaterialCommunityIcons name="home" size={size} color={color} />;
-          if (name === 'results') return <MaterialCommunityIcons name="chart-pie" size={size} color={color} />;
-          if (name === 'history') return <MaterialCommunityIcons name="history" size={size} color={color} />;
-          return null;
+          const names = { home: 'home', results: 'chart-pie', history: 'history' };
+          return <MaterialCommunityIcons name={names[route.name]} size={size} color={color} />;
         },
       })}
     >

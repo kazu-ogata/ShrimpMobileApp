@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 import { sendPasswordResetEmail } from '../config/mail.config.js';
+import QrSession from '../models/qrSession.model.js';
 
 // --- Signup Function ---
 export const signup = async (req, res) => {
@@ -154,5 +155,26 @@ export const resetPassword = async (req, res) => {
   } catch (error) {
     console.error('Reset password error:', error);
     res.status(500).json({ message: 'Something went wrong during password reset.' });
+  }
+};
+
+export const authorizeMachine = async (req, res) => {
+  const { sessionId, userId } = req.body;
+
+  try {
+    // Look for the "pending" session the Pi just created
+    const session = await QrSession.findOneAndUpdate(
+      { sessionId, status: 'pending' },
+      { userId, status: 'completed' },
+      { new: true }
+    );
+
+    if (!session) {
+      return res.status(404).json({ message: 'QR Code is expired or invalid.' });
+    }
+
+    res.status(200).json({ success: true, message: 'Machine authorized!' });
+  } catch (error) {
+    res.status(500).json({ message: 'Authorization failed', error: error.message });
   }
 };

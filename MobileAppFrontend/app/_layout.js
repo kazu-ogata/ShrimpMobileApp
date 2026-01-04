@@ -5,44 +5,23 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from '@/context/AuthContext';
 import '@/utils/layoutAnimationSetup';
-import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
-
-const toastConfig = {
-  success: (props) => (
-    <BaseToast
-      {...props}
-      style={{ borderLeftColor: '#156043', height: 80, width: '90%' }}
-      contentContainerStyle={{ paddingHorizontal: 15 }}
-      text1Style={{ fontSize: 16, fontWeight: 'bold', color: '#013A2E' }}
-      text2Style={{ fontSize: 14, color: '#156043' }}
-    />
-  ),
-  error: (props) => (
-    <ErrorToast
-      {...props}
-      style={{ borderLeftColor: '#CC3333', height: 80, width: '90%' }}
-      contentContainerStyle={{ paddingHorizontal: 15 }}
-      text1Style={{ fontSize: 16, fontWeight: 'bold', color: '#A30000' }}
-      text2Style={{ fontSize: 14, color: '#CC3333' }}
-    />
-  ),
-};
+import Toast from 'react-native-toast-message';
 
 export default function RootLayout() {
   return (
     <AuthProvider>
       <SafeAreaView style={styles.safe} edges={[]}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <View style={styles.container}>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { flex: 1 } }} />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FAF7F2' } }} />
         </View>
       </SafeAreaView>
-      <Toast config={toastConfig} />
+      <Toast />
     </AuthProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#32996D' },
+  safe: { flex: 1, backgroundColor: '#FAF7F2' },
   container: { flex: 1 },
 });
