@@ -51,31 +51,31 @@ export const AuthProvider = ({ children }) => {
   }, [token, segments, isLoading, router]);
 
   // --- MODIFIED signIn function ---
-  const signIn = async (loginInput, password, rememberMe) => { // Added rememberMe param
+  const signIn = async (loginInput, password, rememberMe) => { 
     try {
-      const response = await apiClient.post('/auth/login', { loginInput, password });
+      // We use loginInput (the value from the text box) 
+      // and send it as 'loginInput' (the key the backend expects)
+      const response = await apiClient.post('/auth/login', { 
+        loginInput: loginInput, 
+        password: password 
+      });
+      
       const { result, token: newToken } = response.data;
 
-      // Always set state for the current session
       setUser(result);
       setToken(newToken);
-      console.log('[signIn] State set for current session.');
+      console.log('[signIn] Login success, setting state.');
 
-      // ONLY save to AsyncStorage if rememberMe is true
       if (rememberMe) {
         await AsyncStorage.setItem('userToken', newToken);
         await AsyncStorage.setItem('userData', JSON.stringify(result));
-        console.log('[signIn] RememberMe checked: Session saved to AsyncStorage.');
       } else {
-        // Ensure any old session is cleared if user logs in WITHOUT remember me
         await AsyncStorage.removeItem('userToken');
         await AsyncStorage.removeItem('userData');
-        console.log('[signIn] RememberMe NOT checked: AsyncStorage cleared.');
       }
-      // Navigation is handled by useEffect above
 
     } catch (error) {
-      // Clear storage on failed login attempt as well? Optional, but can prevent issues.
+      console.error("Login Error:", error.response?.data || error.message);
       await AsyncStorage.removeItem('userToken');
       await AsyncStorage.removeItem('userData');
       throw new Error(error?.response?.data?.message || 'Login failed. Please try again.');

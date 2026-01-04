@@ -1,8 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'https://shrimpmobileapp-backend-api.onrender.com';
-
+const API_BASE_URL = 'https://shrimpmobileapp-backend-api.onrender.com/api';
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 40000,
