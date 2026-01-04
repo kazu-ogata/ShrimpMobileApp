@@ -20,6 +20,7 @@ export default function Login() {
     try {
       await signIn(username, password, remember);
     } catch (error) {
+      console.log("Detailed Login Error:", error);
       Alert.alert('Login Failed', error.message);
     } finally { setIsLoading(false); }
   }

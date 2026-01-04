@@ -6,93 +6,116 @@ import QrSession from '../models/qrSession.model.js';
 
 // --- Signup Function ---
 export const signup = async (req, res) => {
-  const { username, email, password } = req.body;
-  if (!username || !email || !password) {
-    return res.status(400).json({ message: 'username, email and password are required' });
-  }
-  try {
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Username or email already exists' });
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: 'username, email and password are required' });
     }
+    try {
+        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Username or email already exists' });
+        }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
-    const result = await User.create({ username, email, password: hashedPassword });
-    const token = jwt.sign({ username: result.username, id: result._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
-    // Send back user info (excluding password) and token
-    res.status(201).json({ result: { id: result._id, username: result.username, email: result.email }, token });
-  } catch (error) {
-    console.error('Signup error:', error);
-    res.status(500).json({ message: 'Something went wrong during signup.', error: error.message });
-  }
+        const hashedPassword = await bcrypt.hash(password, 12);
+        const result = await User.create({ username, email, password: hashedPassword });
+        
+        const token = jwt.sign(
+            { username: result.username, id: result._id }, 
+            process.env.JWT_SECRET || 'secret', 
+            { expiresIn: '1h' }
+        );
+
+        // UPDATED: Sending both id and _id to match frontend expectations
+        res.status(201).json({ 
+            success: true,
+            result: { 
+                id: result._id, 
+                _id: result._id, 
+                username: result.username, 
+                email: result.email 
+            }, 
+            token 
+        });
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({ message: 'Something went wrong during signup.', error: error.message });
+    }
 };
 
 // --- Login Function ---
 export const login = async (req, res) => {
-  const { loginInput, password } = req.body; // Accepts username or email
-  if (!loginInput || !password) {
-    return res.status(400).json({ message: 'Identifier (username/email) and password are required' });
-  }
-  try {
-    const existingUser = await User.findOne({ $or: [ { username: loginInput }, { email: loginInput } ] });
-    if (!existingUser) {
-      return res.status(404).json({ message: 'User not found' });
+    const { loginInput, password } = req.body; 
+    if (!loginInput || !password) {
+        return res.status(400).json({ message: 'Identifier (username/email) and password are required' });
     }
+    try {
+        const existingUser = await User.findOne({ $or: [ { username: loginInput }, { email: loginInput } ] });
+        if (!existingUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-    const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
-    if (!isPasswordCorrect) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+        const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
+        if (!isPasswordCorrect) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign(
+            { username: existingUser.username, id: existingUser._id }, 
+            process.env.JWT_SECRET || 'secret', 
+            { expiresIn: '1h' }
+        );
+
+        // UPDATED: Sending both id and _id
+        res.status(200).json({ 
+            success: true, 
+            message: 'Login Successful', 
+            result: { 
+                id: existingUser._id, 
+                _id: existingUser._id, 
+                username: existingUser.username, 
+                email: existingUser.email 
+            }, 
+            token 
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Something went wrong during login.', error: error.message });
     }
-
-    const token = jwt.sign({ username: existingUser.username, id: existingUser._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
-    // Send back user info (excluding password) and token
-    res.status(200).json({ success: true, message: 'Login Successful', result: { id: existingUser._id, username: existingUser.username, email: existingUser.email }, token });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Something went wrong during login.', error: error.message });
-  }
 };
 
 // --- Recover Password Function ---
 export const recoverPassword = async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ message: 'Email address is required' });
-  }
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      console.log('Password reset attempt for non-existent email:', email);
-      // Don't reveal user existence
-      return res.status(200).json({ message: 'If an account with that email exists, a password reset code has been sent.' });
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Email address is required' });
     }
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(200).json({ message: 'If an account with that email exists, a password reset code has been sent.' });
+        }
 
-    // Generate a simple 6-digit code
-    const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiryDate = new Date(Date.now() + 3600000); // 1 hour expiration
+        const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiryDate = new Date(Date.now() + 3600000); 
 
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = expiryDate;
-    await user.save();
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = expiryDate;
+        await user.save();
 
-    // Send the email
-    const emailSent = await sendPasswordResetEmail(user.email, resetToken);
+        const emailSent = await sendPasswordResetEmail(user.email, resetToken);
 
-    if (emailSent) {
-      res.status(200).json({ message: 'Password reset code sent to email.' });
-    } else {
-      // If email fails, clear the token to allow retry
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpires = undefined;
-      await user.save();
-      res.status(500).json({ message: 'Error sending password reset email.' });
+        if (emailSent) {
+            res.status(200).json({ message: 'Password reset code sent to email.' });
+        } else {
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpires = undefined;
+            await user.save();
+            res.status(500).json({ message: 'Error sending password reset email.' });
+        }
+    } catch (error) {
+        console.error('Recover password error:', error);
+        res.status(500).json({ message: 'Something went wrong during password recovery.' });
     }
-
-  } catch (error) {
-    console.error('Recover password error:', error);
-    res.status(500).json({ message: 'Something went wrong during password recovery.' });
-  }
 };
 
 // --- Verify Reset Code Function ---
@@ -101,21 +124,16 @@ export const verifyResetCode = async (req, res) => {
     if (!email || !code) {
         return res.status(400).json({ message: 'Email and code are required' });
     }
-
     try {
         const user = await User.findOne({
             email,
             resetPasswordToken: code,
-            resetPasswordExpires: { $gt: Date.now() } // Check expiry
+            resetPasswordExpires: { $gt: Date.now() }
         });
-
         if (!user) {
             return res.status(400).json({ message: 'Password reset code is invalid or has expired.' });
         }
-
-        // Send success if code is valid
         res.status(200).json({ message: 'Code verified successfully.' });
-
     } catch (error) {
         console.error('Verify reset code error:', error);
         res.status(500).json({ message: 'Something went wrong during code verification.' });
@@ -124,56 +142,47 @@ export const verifyResetCode = async (req, res) => {
 
 // --- Reset Password Function ---
 export const resetPassword = async (req, res) => {
-  const { email, code, newPassword } = req.body;
-  if (!email || !code || !newPassword) {
-    return res.status(400).json({ message: 'Email, code, and new password are required' });
-  }
-
-  try {
-    const user = await User.findOne({
-      email,
-      resetPasswordToken: code,
-      resetPasswordExpires: { $gt: Date.now() } // Check expiry
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: 'Password reset code is invalid or has expired.' });
+    const { email, code, newPassword } = req.body;
+    if (!email || !code || !newPassword) {
+        return res.status(400).json({ message: 'Email, code, and new password are required' });
     }
-
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-    // Update password and clear reset fields
-    user.password = hashedPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
-
-    // Send success message
-    res.status(200).json({ success: true, message: 'Password has been reset successfully.' });
-
-  } catch (error) {
-    console.error('Reset password error:', error);
-    res.status(500).json({ message: 'Something went wrong during password reset.' });
-  }
+    try {
+        const user = await User.findOne({
+            email,
+            resetPasswordToken: code,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+        if (!user) {
+            return res.status(400).json({ message: 'Password reset code is invalid or has expired.' });
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        user.password = hashedPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+        res.status(200).json({ success: true, message: 'Password has been reset successfully.' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ message: 'Something went wrong during password reset.' });
+    }
 };
 
+// --- Authorize Machine Function ---
 export const authorizeMachine = async (req, res) => {
-  const { sessionId, userId } = req.body;
-  try {
-    // Ensure we find the session and update it
-    const session = await QrSession.findOneAndUpdate(
-      { sessionId: sessionId }, 
-      { 
-        userId: userId, // Mongoose will handle the string-to-ObjectId conversion if the model is correct
-        status: 'completed' 
-      },
-      { new: true }
-    );
+    const { sessionId, userId } = req.body;
+    try {
+        const session = await QrSession.findOneAndUpdate(
+            { sessionId: sessionId, status: 'pending' },
+            { userId: userId, status: 'completed' },
+            { new: true }
+        );
 
-    if (!session) return res.status(404).json({ message: 'Invalid Session' });
-    res.status(200).json({ success: true });
-  } catch (error) {
-    res.status(500).json({ message: 'Error', error });
-  }
+        if (!session) {
+            return res.status(404).json({ message: 'QR Code is expired or invalid.' });
+        }
+
+        res.status(200).json({ success: true, message: 'Machine authorized!' });
+    } catch (error) {
+        res.status(500).json({ message: 'Authorization failed', error: error.message });
+    }
 };

@@ -5,7 +5,7 @@ const API_BASE_URL = 'https://shrimpmobileapp-backend-api.onrender.com';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000, // 5-second timeout
+  timeout: 40000,
 });
 
 // Automatically add token to requests
