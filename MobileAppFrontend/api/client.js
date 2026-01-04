@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //  API_BASE_URL = 'http://192.168.20.22:5000/api';
 
-const API_BASE_URL = 'https://shrimp-backend-api.onrender.com/api';
+const API_BASE_URL = 'https://shrimpmobileapp.onrender.com';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
