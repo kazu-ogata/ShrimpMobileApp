@@ -1,17 +1,21 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { PieChart } from 'react-native-chart-kit';
 import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/api/client';
-import { LinearGradient } from 'expo-linear-gradient';
+
+const screenWidth = Dimensions.get('window').width;
 
 export default function Home() {
   const router = useRouter();
   const { user } = useAuth();
-  const [data, setData] = useState({ count: '0 pcs', biomass: '0 g', date: 'No records' });
   const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState({ 
+    count: 0, biomass: 0, date: '-', feed: 0, protein: 0, filler: 0 
+  });
 
   const fetchLatest = async () => {
     if (!user) return;
@@ -19,9 +23,15 @@ export default function Home() {
     try {
       const res = await apiClient.get(`/results?ownerId=${user.id}`);
       if (res.data?._id) {
+        const count = res.data.shrimpCount || 0;
+        const biomass = count * 0.01;
+        const feed = biomass * 0.06;
         setData({
-          count: `${res.data.shrimpCount.toLocaleString()} pcs`,
-          biomass: `${res.data.biomass.toFixed(1)} g`,
+          count: count,
+          biomass: biomass.toFixed(2),
+          feed: feed.toFixed(2),
+          protein: (feed * 0.55).toFixed(2),
+          filler: (feed * 0.45).toFixed(2),
           date: `${new Date(res.data.dateTime).toLocaleDateString()} | ${new Date(res.data.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
         });
       }
@@ -31,62 +41,76 @@ export default function Home() {
 
   useFocusEffect(useCallback(() => { fetchLatest(); }, [user]));
 
+  const pieData = [
+    { name: 'Protein', population: 55, color: '#2A9D8F', legendFontColor: '#333', legendFontSize: 12 },
+    { name: 'Filler', population: 45, color: '#0D3D45', legendFontColor: '#333', legendFontSize: 12 },
+  ];
+
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View><Text style={styles.hi}>Hello,</Text><Text style={styles.un}>{user?.username}</Text></View>
-          <TouchableOpacity onPress={() => router.push('/profile')}><MaterialCommunityIcons name="account-circle" size={50} color="#1A3A5F" /></TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={styles.sync} onPress={fetchLatest} disabled={isLoading}>
-          <Text style={styles.syncT}>{isLoading ? 'Syncing...' : 'Sync Now'}</Text>
-          <Ionicons name="refresh" size={16} color="white" style={{marginLeft:8}} />
-        </TouchableOpacity>
-
-        <View style={styles.statContainer}>
-          <Text style={styles.lab}>LATEST RECORD</Text>
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <View style={styles.box}><Text style={styles.val}>{data.count}</Text><Text style={styles.sub}>SHRIMP COUNT</Text></View>
-              <View style={styles.box}><Text style={styles.val}>{data.biomass}</Text><Text style={styles.sub}>BIOMASS</Text></View>
-            </View>
-            <Text style={styles.dt}>{data.date}</Text>
-          </View>
-        </View>
-
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.scanBtn} onPress={() => router.push('/scanner')}>
-            <LinearGradient colors={['#1A3A5F', '#2c3e50']} style={styles.grad}>
-              <Ionicons name="qr-code-outline" size={30} color="white" />
-              <View><Text style={styles.scanT}>CONNECT TO MACHINE</Text><Text style={styles.scanS}>Tap here to scan QR code</Text></View>
-            </LinearGradient>
+          <Text style={styles.hi}>Hello!</Text>
+          <TouchableOpacity onPress={() => router.push('/profile')}>
+            <MaterialCommunityIcons name="account-circle-outline" size={45} color="#000" />
           </TouchableOpacity>
         </View>
-      </View>
+
+        <TouchableOpacity style={styles.syncBtn} onPress={fetchLatest}>
+          <Text style={styles.syncText}>{isLoading ? 'Syncing...' : 'Sync Now'}</Text>
+          <Ionicons name="refresh" size={18} color="white" style={{marginLeft: 8}} />
+        </TouchableOpacity>
+
+        <Text style={styles.sectionTitle}>Latest Record</Text>
+        <Text style={styles.dateTimeText}>{data.date}</Text>
+
+        <View style={styles.statsRow}>
+          <View style={styles.statsCard}><Text style={styles.statsLabel}>Total Shrimp Count</Text><Text style={styles.statsValue}>{data.count}</Text><Text style={styles.unit}>pcs</Text></View>
+          <View style={styles.statsCard}><Text style={styles.statsLabel}>Total Biomass</Text><Text style={styles.statsValue}>{data.biomass}</Text><Text style={styles.unit}>g</Text></View>
+        </View>
+
+        <View style={styles.feedCard}>
+          <Text style={styles.feedTitle}>Feed Recommendation</Text>
+          <Text style={styles.feedMainValue}>{data.feed} g/day</Text>
+          <PieChart 
+            data={pieData} 
+            width={screenWidth - 80} 
+            height={150} 
+            chartConfig={{ color: (o = 1) => `rgba(13, 61, 69, ${o})` }} 
+            accessor="population" 
+            backgroundColor="transparent" 
+            paddingLeft="15" 
+            absolute 
+          />
+          <Text style={styles.feedSubText}>Protein: {data.protein}g | Filler: {data.filler}g</Text>
+        </View>
+
+        <TouchableOpacity style={styles.viewHistoryBtn} onPress={() => router.push('/history')}>
+          <Text style={styles.viewHistoryText}>View History</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FAF7F2' },
-  container: { flex: 1, padding: 25 },
+  scrollContent: { padding: 25 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  hi: { color: '#555', fontSize: 16 },
-  un: { color: '#1A3A5F', fontSize: 28, fontWeight: 'bold' },
-  sync: { flexDirection: 'row', backgroundColor: '#1A3A5F', alignSelf: 'center', padding: 12, borderRadius: 25, marginBottom: 30 },
-  syncT: { color: 'white', fontWeight: 'bold' },
-  statContainer: { flex: 1 },
-  lab: { fontSize: 13, fontWeight: 'bold', color: '#555', marginBottom: 15 },
-  card: { backgroundColor: 'white', padding: 25, borderRadius: 20, elevation: 4 },
-  row: { flexDirection: 'row', justifyContent: 'space-around' },
-  box: { alignItems: 'center' },
-  val: { fontSize: 24, fontWeight: 'bold', color: '#1A3A5F' },
-  sub: { fontSize: 11, color: '#2A9D8F', fontWeight: 'bold' },
-  dt: { textAlign: 'center', marginTop: 20, color: '#888', fontSize: 12 },
-  footer: { marginBottom: 10 },
-  scanBtn: { borderRadius: 15, overflow: 'hidden' },
-  grad: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 15 },
-  scanT: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-  scanS: { color: 'rgba(255,255,255,0.6)', fontSize: 12 }
+  hi: { fontSize: 36, fontWeight: 'bold', color: '#000' },
+  syncBtn: { backgroundColor: '#0D3D45', flexDirection: 'row', alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 25, borderRadius: 25, marginBottom: 25 },
+  syncText: { color: 'white', fontWeight: 'bold' },
+  sectionTitle: { fontSize: 14, fontWeight: 'bold' },
+  dateTimeText: { fontSize: 12, color: '#666', marginBottom: 15 },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
+  statsCard: { backgroundColor: 'white', width: '48%', padding: 20, borderRadius: 20, borderWidth: 1, borderColor: '#0D3D45', alignItems: 'center' },
+  statsLabel: { fontSize: 11, color: '#0D3D45', fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
+  statsValue: { fontSize: 22, fontWeight: 'bold' },
+  unit: { fontSize: 12, fontWeight: 'bold' },
+  feedCard: { backgroundColor: 'white', padding: 20, borderRadius: 20, borderWidth: 1, borderColor: '#0D3D45', alignItems: 'center', marginBottom: 20 },
+  feedTitle: { fontSize: 12, fontWeight: 'bold', color: '#0D3D45', marginBottom: 5 },
+  feedMainValue: { fontSize: 24, fontWeight: 'bold', marginBottom: 5 },
+  feedSubText: { fontSize: 11, fontWeight: 'bold', marginTop: 10 },
+  viewHistoryBtn: { backgroundColor: '#0D3D45', padding: 15, borderRadius: 12, alignItems: 'center' },
+  viewHistoryText: { color: 'white', fontWeight: 'bold' }
 });

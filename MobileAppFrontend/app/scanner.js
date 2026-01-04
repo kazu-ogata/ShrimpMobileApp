@@ -22,6 +22,8 @@ export default function QRScanner() {
   }
 
   const handleScan = async ({ data }) => {
+    console.log("Scanned Data:", data); // Check if this is the UUID
+    console.log("Current User ID:", user?.id); // CHECK IF THIS IS NULL
     setScanned(true);
     try {
       await apiClient.post('/auth/authorize-machine', { sessionId: data, userId: user.id });
