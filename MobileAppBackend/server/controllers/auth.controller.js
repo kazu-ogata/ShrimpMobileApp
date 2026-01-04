@@ -160,21 +160,20 @@ export const resetPassword = async (req, res) => {
 
 export const authorizeMachine = async (req, res) => {
   const { sessionId, userId } = req.body;
-
   try {
-    // Look for the "pending" session the Pi just created
+    // Ensure we find the session and update it
     const session = await QrSession.findOneAndUpdate(
-      { sessionId, status: 'pending' },
-      { userId, status: 'completed' },
+      { sessionId: sessionId }, 
+      { 
+        userId: userId, // Mongoose will handle the string-to-ObjectId conversion if the model is correct
+        status: 'completed' 
+      },
       { new: true }
     );
 
-    if (!session) {
-      return res.status(404).json({ message: 'QR Code is expired or invalid.' });
-    }
-
-    res.status(200).json({ success: true, message: 'Machine authorized!' });
+    if (!session) return res.status(404).json({ message: 'Invalid Session' });
+    res.status(200).json({ success: true });
   } catch (error) {
-    res.status(500).json({ message: 'Authorization failed', error: error.message });
+    res.status(500).json({ message: 'Error', error });
   }
 };
