@@ -6,7 +6,7 @@
 ### **Core Experience**
 | Dashboard (Home) | Hardware Sync (Scan) | Records (History) |
 | :---: | :---: | :---: |
-| <img src="MobileAppFrontend/assets/screenshots/home.png" width="230" /> | <img src="./assets/screenshots/scan.png" width="230" /> | <img src="./assets/screenshots/history.png" width="230" /> |
+| <img src="./assets/screenshots/home.png" width="230" /> | <img src="./assets/screenshots/scan.png" width="230" /> | <img src="./assets/screenshots/history.png" width="230" /> |
 | *Real-time biomass sync* | *QR Machine Authorization* | *CRUD & Historical Data* |
 
 ---
