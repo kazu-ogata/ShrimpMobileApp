@@ -1,0 +1,35 @@
+# --- SYSTEM & OS ---
+.DS_Store
+*.pem
+Thumbs.db
+
+# --- NODE.JS (Common) ---
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- BACKEND SPECIFIC ---
+MobileAppBackend/server/.env
+MobileAppBackend/server/uploads/
+MobileAppBackend/__pycache__/
+MobileAppBackend/venv/
+MobileAppBackend/*.pt
+MobileAppBackend/*.ipynb_checkpoints
+
+# --- FRONTEND SPECIFIC (EXPO/REACT NATIVE) ---
+MobileAppFrontend/.expo/
+MobileAppFrontend/dist/
+MobileAppFrontend/web-build/
+MobileAppFrontend/ios/
+MobileAppFrontend/android/
+MobileAppFrontend/.vscode/
+MobileAppFrontend/.idea/
+MobileAppFrontend/expo-env.d.ts
+MobileAppFrontend/*.tsbuildinfo
+
+# --- BUILD OUTPUTS ---
+*.apk
+*.ipa
+*.app
