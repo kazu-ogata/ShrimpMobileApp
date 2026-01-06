@@ -49,4 +49,4 @@ A dual-layer service architecture:
 
 ---
 
-© 2024-2026 | Computer Engineering Department
+© 2025-2026 | Computer Engineering | Project Design 1 & 2 | Team 16
