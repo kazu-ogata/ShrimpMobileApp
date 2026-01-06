@@ -49,20 +49,4 @@ A dual-layer service architecture:
 
 ---
 
-## 🚀 Deployment Instructions
-
-### AI Inference Server
-1. Navigate to `MobileAppBackend/`.
-2. Run `python model_server.py` (Ensure `YOLOshrimp.pt` is present).
-
-### API Server
-1. Navigate to `MobileAppBackend/server/`.
-2. Run `npm install` followed by `npm start`.
-
-### Mobile App
-1. Navigate to `MobileAppFrontend/`.
-2. Run `npm install` followed by `npx expo start`.
-
----
-
 © 2024-2026 | Computer Engineering Department
