@@ -31,5 +31,5 @@ MobileAppFrontend/*.tsbuildinfo
 
 # --- BUILD OUTPUTS ---
 *.apk
-*.ipa
 *.app
+*.ipa
