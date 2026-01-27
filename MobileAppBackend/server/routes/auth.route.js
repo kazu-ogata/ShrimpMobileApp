@@ -3,15 +3,12 @@ import { signup, login, recoverPassword, verifyResetCode, resetPassword, authori
 
 const router = express.Router();
 
-// Existing routes
 router.post('/signup', signup);
 router.post('/login', login);
 
-// --- ADD NEW ROUTES ---
 router.post('/recover', recoverPassword);
-router.post('/verify-code', verifyResetCode); // Route for verification step
+router.post('/verify-code', verifyResetCode);
 router.post('/reset-password', resetPassword);
-// --------------------
 
 router.post('/authorize-machine', authorizeMachine);
 

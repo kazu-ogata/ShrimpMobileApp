@@ -2,13 +2,11 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import connectDB from './config/db.config.js';
-
 import postsRoutes from './routes/posts.route.js';
 import authRoutes from './routes/auth.route.js';
 import biomassRecordsRoutes from './routes/biomassRecords.route.js';
 import imageProcessRoutes from './routes/imageProcess.route.js';
 import { getLatestBiomassRecord } from './controllers/biomassRecord.controller.js';
-
 
 const app = express();
 

@@ -32,7 +32,7 @@ export default function Home() {
           feed: feed.toFixed(2),
           protein: (feed * 0.55).toFixed(2),
           filler: (feed * 0.45).toFixed(2),
-          date: `${new Date(res.data.dateTime).toLocaleDateString()} | ${new Date(res.data.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+          date: `${new Date(res.data.dateTime).toLocaleDateString()} | ${new Date(res.data.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`
         });
       }
     } catch (e) { console.error(e); }
@@ -42,8 +42,8 @@ export default function Home() {
   useFocusEffect(useCallback(() => { fetchLatest(); }, [user]));
 
   const pieData = [
-    { name: 'Protein', population: 55, color: '#2A9D8F', legendFontColor: '#333', legendFontSize: 12 },
-    { name: 'Filler', population: 45, color: '#0D3D45', legendFontColor: '#333', legendFontSize: 12 },
+    { name: '% Protein', population: 55, color: '#2A9D8F', legendFontColor: '#333', legendFontSize: 12 },
+    { name: '% Filler', population: 45, color: '#0D3D45', legendFontColor: '#333', legendFontSize: 12 },
   ];
 
   return (

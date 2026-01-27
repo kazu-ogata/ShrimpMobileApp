@@ -39,7 +39,7 @@ function HistoryCard({ item, onDelete }) {
             {dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </Text>
           <Text style={styles.timeText}>
-            {dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
           </Text>
         </View>
         <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={22} color="#0D3D45" />
@@ -134,7 +134,7 @@ export default function History() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FAF7F2' },
-  container: { flex: 1, padding: 25 },
+  container: { flex: 1, paddingHorizontal: 25, paddingTop: 25, paddingBottom: 0 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   title: { fontSize: 32, fontWeight: 'bold', color: '#000', marginBottom: 25 },
   

@@ -38,4 +38,4 @@ const styles = StyleSheet.create({
   bottom: { width: '100%', alignItems: 'center', paddingBottom: 50 },
   getStartedBtn: { width: width * 0.7, backgroundColor: '#1A3A5F', paddingVertical: 18, borderRadius: 999, alignItems: 'center' },
   getStartedText: { color: '#FAF7F2', fontWeight: 'bold', fontSize: 22 },
-});
+})

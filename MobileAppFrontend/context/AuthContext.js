@@ -50,7 +50,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token, segments, isLoading, router]);
 
-  // --- MODIFIED signIn function ---
   const signIn = async (loginInput, password, rememberMe) => { 
     try {
       // We use loginInput (the value from the text box) 
@@ -81,8 +80,6 @@ export const AuthProvider = ({ children }) => {
       throw new Error(error?.response?.data?.message || 'Login failed. Please try again.');
     }
   };
-  // --- END MODIFIED signIn ---
-
 
   const signUp = async (username, email, password) => {
     // Signup currently always saves the session (acts like "Remember Me" is checked)
